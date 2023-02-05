@@ -1,17 +1,17 @@
 import os
 import random
 import sqlite3
-import datetime
+from utils import now
 import pandas as pd
 
 path = os.path.dirname(__file__)
 database = path + "/data/CompanyValuation.db"
-excel = path + "/data/perakende.xlsx"
+excel = path + "/data/bankacılık.xlsx"
 
 SQL_CREATE_COMPANY_VALUATION_INFO_TABLE = """ CREATE TABLE IF NOT EXISTS COMPANY_VALUATION_INFO (
                                     GUID INTEGER NOT NULL PRIMARY KEY UNIQUE,
                                     LAST_UPDATED TEXT,
-                                    STOCK_TICKER_SYMBOL TEXT,
+                                    TICKER TEXT,
                                     EQUITY_AMOUNT REAL,
                                     INITIAL_CAPITAL_AMOUNT REAL,
                                     NET_REVENUE_Q4 REAL,
@@ -19,11 +19,11 @@ SQL_CREATE_COMPANY_VALUATION_INFO_TABLE = """ CREATE TABLE IF NOT EXISTS COMPANY
                                     NET_REVENUE_Q2 REAL,
                                     NET_REVENUE_Q1 REAL
                                     ); """
-SQL_SELECT_FROM_COMPANY_VALUATION_INFO = ''' SELECT * FROM COMPANY_VALUATION_INFO WHERE STOCK_TICKER_SYMBOL=? '''
+SQL_SELECT_FROM_COMPANY_VALUATION_INFO = ''' SELECT * FROM COMPANY_VALUATION_INFO WHERE TICKER=? '''
 SQL_INSERT_COMPANY_VALUATION_INFO = ''' INSERT INTO COMPANY_VALUATION_INFO (
 GUID,
 LAST_UPDATED,
-STOCK_TICKER_SYMBOL,
+TICKER,
 EQUITY_AMOUNT,
 INITIAL_CAPITAL_AMOUNT,
 NET_REVENUE_Q4,
@@ -31,7 +31,7 @@ NET_REVENUE_Q3,
 NET_REVENUE_Q2,
 NET_REVENUE_Q1) 
 VALUES(?,?,?,?,?,?,?,?,?); '''
-SQL_UPDATE_COMPANY_VALUATION_INFO = ''' UPDATE COMPANY_VALUATION_INFO SET {} WHERE STOCK_TICKER_SYMBOL=?'''
+SQL_UPDATE_COMPANY_VALUATION_INFO = ''' UPDATE COMPANY_VALUATION_INFO SET {} WHERE TICKER=?'''
 
 UPDATE_COLUMNS: list[str] = ['LAST_UPDATED', 'EQUITY_AMOUNT', 'INITIAL_CAPITAL_AMOUNT', 'NET_REVENUE_Q4',
                              'NET_REVENUE_Q3', 'NET_REVENUE_Q2', 'NET_REVENUE_Q1']
@@ -39,23 +39,19 @@ UPDATE_COLUMNS: list[str] = ['LAST_UPDATED', 'EQUITY_AMOUNT', 'INITIAL_CAPITAL_A
 SQL_CREATE_COMPANY_INFO_TABLE = """CREATE TABLE IF NOT EXISTS COMPANY_INFO (
                                     GUID INTEGER NOT NULL PRIMARY KEY UNIQUE,
                                     LAST_UPDATED TEXT,
-                                    STOCK_TICKER_SYMBOL TEXT,
+                                    TICKER TEXT,
                                     COMPANY_NAME TEXT,
                                     INDUSTRY TEXT
                                     ); """
-SQL_SELECT_COMPANY_INFO_TICKER = ''' SELECT * FROM COMPANY_INFO WHERE STOCK_TICKER_SYMBOL=? '''
-SQL_SELECT_COMPANY_INFO_INDUSTRY = ''' SELECT STOCK_TICKER_SYMBOL FROM COMPANY_INFO WHERE INDUSTRY=? '''
+SQL_SELECT_COMPANY_INFO_TICKER = ''' SELECT * FROM COMPANY_INFO WHERE TICKER=? '''
+SQL_SELECT_COMPANY_INFO_INDUSTRY = ''' SELECT TICKER FROM COMPANY_INFO WHERE INDUSTRY=? '''
 SQL_INSERT_COMPANY_INFO = ''' INSERT INTO COMPANY_INFO (
 GUID,
 LAST_UPDATED,
-STOCK_TICKER_SYMBOL,
+TICKER,
 COMPANY_NAME,
 INDUSTRY)
 VALUES(?,?,?,?,?); '''
-
-
-def now():
-    return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 
 def createConnection():
@@ -184,6 +180,7 @@ def updateCompanyValuationInfo(ticker, balanceSheetValues):
         conn.close()
     except Exception as e:
         print(e)
+
 
 def readExcel():
     dataFrame = pd.read_excel(excel)

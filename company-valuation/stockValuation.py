@@ -1,24 +1,23 @@
-import datetime
 import math
-import os
+from os import startfile
 import time
 import pandas
 import requests
 import talib
 import database
-import utils
+from utils import parseInt, today
 from company import Company
 from bs4 import BeautifulSoup
 
 BALANCE_SHEET_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/bilanco'
 INCOME_STATEMENT_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/ceyreklik-gelir-tablosu'
-industryInfo = 'Perakende'
+industryInfo = 'Bankacılık'
 PROCESS_TIME_LOG = "İşlem {} saniyede tamamlandı."
 
 
 def initialize(industry):
     tickerList = database.selectFromCompanyInfoIndustry(industry)
-    if len(tickerList) == 0:
+    if tickerList is None or len(tickerList) == 0:
         database.readExcel()
         tickerList = database.selectFromCompanyInfoIndustry(industry)
         for ticker in tickerList:
@@ -45,10 +44,10 @@ def fetch_balance_sheet(ticker):
         header = trElements.text
         if header.startswith('Özkaynaklar'.lower()):
             tdElements = trElements.find_all_next("td")
-            equity = utils.parseInt(tdElements[1].text)
+            equity = parseInt(tdElements[1].text)
         elif header.startswith('Ödenmiş Sermaye'.lower()):
             tdElements = trElements.find_all_next("td")
-            initialCapital = utils.parseInt(tdElements[1].text)
+            initialCapital = parseInt(tdElements[1].text)
 
     url = INCOME_STATEMENT_URL.format(ticker)
     page = requests.get(url)
@@ -58,14 +57,14 @@ def fetch_balance_sheet(ticker):
         header = trElements.text
         if header.startswith('Ana Ortaklık Payları'.lower()) or header.startswith('Dönem Net Karı Veya Zararı'.lower()):
             tdElements = trElements.find_all_next("td")
-            netRevenueQ4 = utils.parseInt(tdElements[1].text) + utils.parseInt(tdElements[2].text) + utils.parseInt(
-                tdElements[3].text) + utils.parseInt(tdElements[4].text)
-            netRevenueQ3 = utils.parseInt(tdElements[2].text) + utils.parseInt(tdElements[3].text) + utils.parseInt(
-                tdElements[4].text) + utils.parseInt(tdElements[5].text)
-            netRevenueQ2 = utils.parseInt(tdElements[3].text) + utils.parseInt(tdElements[4].text) + utils.parseInt(
-                tdElements[5].text) + utils.parseInt(tdElements[6].text)
-            netRevenueQ1 = utils.parseInt(tdElements[4].text) + utils.parseInt(tdElements[5].text) + utils.parseInt(
-                tdElements[6].text) + utils.parseInt(tdElements[7].text)
+            netRevenueQ4 = parseInt(tdElements[1].text) + parseInt(tdElements[2].text) + parseInt(
+                tdElements[3].text) + parseInt(tdElements[4].text)
+            netRevenueQ3 = parseInt(tdElements[2].text) + parseInt(tdElements[3].text) + parseInt(
+                tdElements[4].text) + parseInt(tdElements[5].text)
+            netRevenueQ2 = parseInt(tdElements[3].text) + parseInt(tdElements[4].text) + parseInt(
+                tdElements[5].text) + parseInt(tdElements[6].text)
+            netRevenueQ1 = parseInt(tdElements[4].text) + parseInt(tdElements[5].text) + parseInt(
+                tdElements[6].text) + parseInt(tdElements[7].text)
 
     parameters = (equity, initialCapital, netRevenueQ4, netRevenueQ3, netRevenueQ2, netRevenueQ1)
     return parameters
@@ -170,32 +169,6 @@ def priceBook(tickerList):
     return priceBookList
 
 
-def onlyPegReport(tickerList):
-    data = []
-    pegList = peg(tickerList)
-
-    for ticker in tickerList:
-        pegfilter = [item for item in pegList if item[0] == ticker]
-        if len(pegfilter) == 0:
-            pegfilter = [(ticker, 0, 0, 0)]
-        pegRatio = pegfilter[0][1]
-        industrialMultiplier = pegfilter[0][2]
-        totalScore = pegfilter[0][3]
-        element = (ticker, pegRatio, industrialMultiplier, totalScore)
-        data.append(element)
-
-    data.sort(key=lambda x: x[3], reverse=True)
-    reportColumns = ['Şirket', 'PEG Oranı', 'Sektörel PEG Çarpanı', 'Değerleme Puanı']
-    df = pandas.DataFrame(data=data, columns=reportColumns)
-    df.set_index('Şirket', inplace=True)
-    fileHeader = industryInfo
-    if fileHeader.__contains__('/'):
-        fileHeader = industryInfo.replace('/', '-')
-    fileName = "{0} Sektörü Değerleme Raporu_{1}.xlsx".format(fileHeader, datetime.datetime.now().strftime('%Y%m%d'))
-    df.to_excel(fileName)
-    os.startfile(fileName)
-
-
 def multiReport(tickerList):
     # Her bir metrik için ayrı tuple objeleri oluşturuyorum.
     # Bu bilgileri daha sonra bir dataframe'de birleştiriyorum.
@@ -250,9 +223,9 @@ def multiReport(tickerList):
     fileHeader = industryInfo
     if fileHeader.__contains__('/'):
         fileHeader = industryInfo.replace('/', '-')
-    fileName = "{0} Sektörü Değerleme Raporu_{1}.xlsx".format(fileHeader, datetime.datetime.now().strftime('%Y%m%d'))
+    fileName = "{0} Sektörü Değerleme Raporu_{1}.xlsx".format(fileHeader, today())
     df.to_excel(fileName)
-    os.startfile(fileName)
+    startfile(fileName)
 
 
 def main():
