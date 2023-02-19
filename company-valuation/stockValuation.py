@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 BALANCE_SHEET_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/bilanco'
 INCOME_STATEMENT_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/ceyreklik-gelir-tablosu'
-industryInfo = 'Bankacılık'
+industryInfo = 'Meşrubat / İçecek'
 PROCESS_TIME_LOG = "İşlem {} saniyede tamamlandı."
 
 
@@ -71,16 +71,16 @@ def fetch_balance_sheet(ticker):
 
 
 def price_book_ratio(company):
-    market_value = company.price * company.initialCapitalAmount
-    return round(market_value / company.equityAmount, 2)
+    market_value = company.price * company.initial_capital
+    return round(market_value / company.equity, 2)
 
 
 def peg_ratio(company):
     # Her bir çeyrek için hisse başı kâr bilgisi hesaplanıyor.
-    EPSQ4 = company.netRevenueQ4 / company.initialCapitalAmount
-    EPSQ3 = company.netRevenueQ3 / company.initialCapitalAmount
-    EPSQ2 = company.netRevenueQ2 / company.initialCapitalAmount
-    EPSQ1 = company.netRevenueQ1 / company.initialCapitalAmount
+    EPSQ4 = company.net_profit_q4 / company.initial_capital
+    EPSQ3 = company.net_profit_q3 / company.initial_capital
+    EPSQ2 = company.net_profit_q2 / company.initial_capital
+    EPSQ1 = company.net_profit_q1 / company.initial_capital
 
     # 4 çeyrek için hisse başı kar büyüme oranı % üzerinden hesaplanıyor.
     EPS_GROWTH_RATE = round(((EPSQ4 / EPSQ3 - 1 + EPSQ3 / EPSQ2 - 1 + EPSQ2 / EPSQ1 - 1) / 3) * 100, 2)
@@ -146,15 +146,16 @@ def rsi(tickerList):
 
 # LIST OF TUPLES
 # TUPLE FORMAT: COMPANY_NAME | P/B | VALUATION SCORE
-def priceBook(tickerList):
+def pb(tickerList):
     priceBookList = []
     priceBookSum = 0
 
     for ticker in tickerList:
         company = Company(ticker)
         priceBookInt = price_book_ratio(company)
-        priceBookList.append((company.ticker, priceBookInt))
-        priceBookSum += priceBookInt
+        if priceBookInt > 0:
+            priceBookList.append((company.ticker, priceBookInt))
+            priceBookSum += priceBookInt
 
     avg = priceBookSum / len(priceBookList)
     print("{} Sektörü Ortalama PD/DD Oranı: {}".format(industryInfo, round(avg, 2)))
@@ -163,9 +164,9 @@ def priceBook(tickerList):
     # Bu sıraya göre yüksekten düşüğe doğru puanlama yapılacak.
     priceBookList.sort(key=lambda x: x[1])
 
-    for idx, pddd in enumerate(priceBookList):
-        pddd += (abs(priceBookList.index(pddd) - len(priceBookList)),)  # Değerleme puanı hesaplanıp tuple'a ekleniyor.
-        priceBookList[idx] = pddd
+    for idx, pb in enumerate(priceBookList):
+        pb += (abs(priceBookList.index(pb) - len(priceBookList)),)  # Değerleme puanı hesaplanıp tuple'a ekleniyor.
+        priceBookList[idx] = pb
     return priceBookList
 
 
@@ -175,7 +176,7 @@ def multiReport(tickerList):
 
     pegList = peg(tickerList)
     rsiList = rsi(tickerList)
-    priceBookList = priceBook(tickerList)
+    pbList = pb(tickerList)
 
     excelData = []  # Excel dosyasının veri kaynağı bu array olacak.
 
@@ -189,7 +190,7 @@ def multiReport(tickerList):
         if len(rsifilter) == 0:
             rsifilter = [(ticker, 0, 0)]
 
-        pBfilter = [item for item in priceBookList if item[0] == ticker]
+        pBfilter = [item for item in pbList if item[0] == ticker]
         if len(pBfilter) == 0:
             pBfilter = [(ticker, 0, 0)]
 
@@ -202,14 +203,14 @@ def multiReport(tickerList):
         rsiValue = rsifilter[0][1]
 
         # Her bir metrik için değerleme puanları toplanır, hisse sayısı * metrik sayısına bölünür ve 100'e endekslenir.
-        totalScore = round((pegfilter[0][2] + rsifilter[0][2] + pBfilter[0][2]) / (len(tickerList) * 3) * 100, 0)
+        totalScore = round((pegfilter[0][2] + rsifilter[0][2] + pBfilter[0][2]) / (len(tickerList) * 3) * 100, 2)
         element = (ticker, companyName, pbValue, pegRatio, rsiValue, totalScore)
 
         # DataFrame'in veri kaynağı olan listeye eklenir.
         excelData.append(element)
 
     # Veri kaynağının değerleme puanı bazında büyükten küçüğe doğru sıralanır.
-    excelData.sort(key=lambda x: x[5], reverse=True)
+    excelData.sort(key=lambda x: (-x[5], x[3]))
 
     # Excel'deki başlık bilgileri set edilir.
     reportColumns = ['Hisse Senedi Kodu', 'Şirket Unvanı', 'Piyasa / Defter Değeri', 'PEG Oranı', 'Son RSI Değeri',
@@ -228,12 +229,14 @@ def multiReport(tickerList):
     startfile(fileName)
 
 
-def main():
+def processByIndustry():
     startTime = time.perf_counter()
     tickerList = initialize(industryInfo)
     multiReport(tickerList)
     finishTime = time.perf_counter()
     print(PROCESS_TIME_LOG.format(round(finishTime - startTime, 2)))
 
+def main():
+    processByIndustry()
 
 main()

@@ -6,7 +6,7 @@ import pandas as pd
 
 path = os.path.dirname(__file__)
 database = path + "/data/CompanyValuation.db"
-excel = path + "/data/bankacılık.xlsx"
+excel = path + "/data/şirketler.xlsx"
 
 SQL_CREATE_COMPANY_VALUATION_INFO_TABLE = """ CREATE TABLE IF NOT EXISTS COMPANY_VALUATION_INFO (
                                     GUID INTEGER NOT NULL PRIMARY KEY UNIQUE,
@@ -43,6 +43,9 @@ SQL_CREATE_COMPANY_INFO_TABLE = """CREATE TABLE IF NOT EXISTS COMPANY_INFO (
                                     COMPANY_NAME TEXT,
                                     INDUSTRY TEXT
                                     ); """
+
+SQL_SELECT_COMPANY_INFO_FETCH_ALL_INDUSTRIES = ''' SELECT DISTINCT INDUSTRY FROM COMPANY_INFO ORDER BY INDUSTRY '''
+SQL_SELECT_COMPANY_INFO_FETCH_ALL_TICKERS = ''' SELECT DISTINCT TICKER FROM COMPANY_INFO ORDER BY TICKER '''
 SQL_SELECT_COMPANY_INFO_TICKER = ''' SELECT * FROM COMPANY_INFO WHERE TICKER=? '''
 SQL_SELECT_COMPANY_INFO_INDUSTRY = ''' SELECT TICKER FROM COMPANY_INFO WHERE INDUSTRY=? '''
 SQL_INSERT_COMPANY_INFO = ''' INSERT INTO COMPANY_INFO (
@@ -82,6 +85,20 @@ def selectFromCompanyInfoTicker(ticker):
         rows = cursor.fetchall()
         conn.close()
         return rows[0]
+    except Exception as ex:
+        print(ex)
+        conn.close()
+
+
+def selectFromCompanyInfoIndustriesList():
+    conn = createConnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(SQL_SELECT_COMPANY_INFO_FETCH_ALL_INDUSTRIES)
+        rows = cursor.fetchall()
+        rows = [''.join(i) for i in rows]
+        conn.close()
+        return rows
     except Exception as ex:
         print(ex)
         conn.close()
@@ -188,5 +205,4 @@ def readExcel():
         ticker = dataFrame['Kod'][data]
         companyName = dataFrame['Hisse Adı'][data]
         industry = dataFrame['Sektör'][data]
-        if ticker != 'Sektör Ortalamaları':
-            insertCompanyInfo(ticker, companyName, industry)
+        insertCompanyInfo(ticker, companyName, industry)
