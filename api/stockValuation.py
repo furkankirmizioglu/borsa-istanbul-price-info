@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import database
 from company import Company
-from utils import parse_int
+from utils import parse_int, suggestion
 
 BALANCE_SHEET_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/bilanco'
 INCOME_STATEMENT_URL = 'https://fintables.com/sirketler/{}/finansal-tablolar/ceyreklik-gelir-tablosu'
@@ -194,16 +194,8 @@ def report(tickers):
         # Her bir metrik için değerleme puanları toplanır, hisse sayısı * metrik sayısına bölünür ve 100'e endekslenir.
         score = round((peg_filter[0][2] + rsi_filter[0][2] + pb_filter[0][2]) / (len(tickers) * 3) * 100, 2)
 
-        if score > 80:
-            suggestion = "Güçlü Al"
-        elif 70 < score < 80:
-            suggestion = "Al"
-        elif 50 < score < 70:
-            suggestion = "Nötr"
-        else:
-            suggestion = "Sat"
-
-        element = (company.ticker, company.name, pb_filter[0][1], peg_filter[0][1], rsi_filter[0][1], score, suggestion)
+        element = (
+        company.ticker, company.name, pb_filter[0][1], peg_filter[0][1], rsi_filter[0][1], score, suggestion(score))
 
         # DataFrame'in veri kaynağı olan listeye eklenir.
         response_data.append(element)

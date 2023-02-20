@@ -12,29 +12,29 @@ SQL_CREATE_COMPANY_VALUATION_INFO_TABLE = """ CREATE TABLE IF NOT EXISTS COMPANY
                                     GUID INTEGER NOT NULL PRIMARY KEY UNIQUE,
                                     LAST_UPDATED TEXT,
                                     TICKER TEXT,
-                                    EQUITY_AMOUNT REAL,
-                                    INITIAL_CAPITAL_AMOUNT REAL,
-                                    NET_REVENUE_Q4 REAL,
-                                    NET_REVENUE_Q3 REAL,
-                                    NET_REVENUE_Q2 REAL,
-                                    NET_REVENUE_Q1 REAL
+                                    EQUITY REAL,
+                                    INITIAL_CAPITAL REAL,
+                                    NET_PROFIT_Q4 REAL,
+                                    NET_PROFIT_Q3 REAL,
+                                    NET_PROFIT_Q2 REAL,
+                                    NET_PROFIT_Q1 REAL
                                     ); """
 SQL_SELECT_FROM_COMPANY_VALUATION_INFO = ''' SELECT * FROM COMPANY_VALUATION_INFO WHERE TICKER=? '''
 SQL_INSERT_COMPANY_VALUATION_INFO = ''' INSERT INTO COMPANY_VALUATION_INFO (
 GUID,
 LAST_UPDATED,
 TICKER,
-EQUITY_AMOUNT,
-INITIAL_CAPITAL_AMOUNT,
-NET_REVENUE_Q4,
-NET_REVENUE_Q3,
-NET_REVENUE_Q2,
-NET_REVENUE_Q1) 
+EQUITY,
+INITIAL_CAPITAL,
+NET_PROFIT_Q4,
+NET_PROFIT_Q3,
+NET_PROFIT_Q2,
+NET_PROFIT_Q1) 
 VALUES(?,?,?,?,?,?,?,?,?); '''
 SQL_UPDATE_COMPANY_VALUATION_INFO = ''' UPDATE COMPANY_VALUATION_INFO SET {} WHERE TICKER=?'''
 
-UPDATE_COLUMNS: list[str] = ['LAST_UPDATED', 'EQUITY_AMOUNT', 'INITIAL_CAPITAL_AMOUNT', 'NET_REVENUE_Q4',
-                             'NET_REVENUE_Q3', 'NET_REVENUE_Q2', 'NET_REVENUE_Q1']
+UPDATE_COLUMNS: list[str] = ['LAST_UPDATED', 'EQUITY', 'INITIAL_CAPITAL', 'NET_PROFIT_Q4',
+                             'NET_PROFIT_Q3', 'NET_PROFIT_Q2', 'NET_PROFIT_Q1']
 
 SQL_CREATE_COMPANY_INFO_TABLE = """CREATE TABLE IF NOT EXISTS COMPANY_INFO (
                                     GUID INTEGER NOT NULL PRIMARY KEY UNIQUE,

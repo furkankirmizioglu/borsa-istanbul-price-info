@@ -35,8 +35,7 @@ class Company:
 
     def get_price(self):
         yahoo_ticker = "{}.IS".format(self.ticker.upper())
-        now = datetime.datetime.now()
-        now = now + datetime.timedelta(days=1)
+        now = datetime.datetime.now() + datetime.timedelta(days=1)
         one_year_ago = now - datetime.timedelta(days=365)
         stock_data = get_data(ticker=yahoo_ticker,
                               start_date=one_year_ago.strftime("%Y/%m/%d"),
@@ -47,6 +46,3 @@ class Company:
         price_list = array([float(x[3]) for x in close_data])
         price_list = price_list[logical_not(isnan(price_list))]
         return price_list
-
-
-
