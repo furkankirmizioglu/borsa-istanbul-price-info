@@ -1,5 +1,5 @@
 import datetime
-import numpy
+from numpy import array
 import pandas
 import database
 from yahoo_fin.stock_info import get_data
@@ -24,7 +24,7 @@ class Company:
         companyInfo = database.selectFromCompanyInfoTicker(ticker=self.ticker)
         # valuationInfo[0] = GUID
         # valuationInfo[1] = LASTUPDATED
-        # valuationInfo[2] = STOCK_TICKER_SYMBOL
+        # valuationInfo[2] = TICKER
         # valuationInfo[3] = EQUITY_AMOUNT
         # valuationInfo[4] = INITIAL_CAPITAL_AMOUNT
         # valuationInfo[5] = NET_REVENUE_Q4
@@ -33,7 +33,7 @@ class Company:
         # valuationInfo[8] = NET_REVENUE_Q1
         # companyInfo[0] = GUID
         # companyInfo[1] = LAST_UPDATED
-        # companyInfo[2] = STOCK_TICKER_SYMBOL
+        # companyInfo[2] = TICKER
         # companyInfo[3] = COMPANY_NAME
         # companyInfo[4] = INDUSTRY
         self.companyName = companyInfo[3]
@@ -58,7 +58,7 @@ class Company:
                               index_as_date=True,
                               interval='1d')
         close_data = pandas.DataFrame.to_numpy(stock_data)
-        return numpy.array([float(x[3]) for x in close_data])
+        return array([float(x[3]) for x in close_data])
 
 
 
