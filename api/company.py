@@ -9,12 +9,14 @@ class Company:
     name = ""
     ticker = ""
     industry = ""
+    latest_balance_sheet_term = ""
     equity = 0
+    main_equity = 0
     initial_capital = 0
-    net_profit_q4 = 0
-    net_profit_q3 = 0
-    net_profit_q2 = 0
-    net_profit_q1 = 0
+    old_initial_capital = 0
+    lt_liabilities = 0
+    current_ttm_net_profit = 0
+    last_ttm_net_profit = 0
     prices_list = 0
     price = 0
 
@@ -24,12 +26,14 @@ class Company:
         company = database.get_company(ticker=self.ticker)
         self.name = company[3]
         self.industry = company[4]
-        self.equity = valuation[3]
-        self.initial_capital = valuation[4]
-        self.net_profit_q4 = valuation[5]
-        self.net_profit_q3 = valuation[6]
-        self.net_profit_q2 = valuation[7]
-        self.net_profit_q1 = valuation[8]
+        self.latest_balance_sheet_term = valuation[3]
+        self.equity = valuation[4]
+        self.main_equity = valuation[5]
+        self.initial_capital = valuation[6]
+        self.old_initial_capital = valuation[7]
+        self.lt_liabilities = valuation[8]
+        self.current_ttm_net_profit = valuation[9]
+        self.last_ttm_net_profit = valuation[10]
         self.prices_list = self.get_price()
         self.price = round(self.prices_list[-1], 2)
 

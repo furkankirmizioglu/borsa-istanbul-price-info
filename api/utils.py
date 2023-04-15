@@ -2,9 +2,14 @@ from datetime import datetime
 
 
 def parse_int(text):
-    if len(text) > 0:
-        return int(text.replace('.', ''))
-    else:
+    try:
+        if len(text) > 0:
+            value = int(text.replace('.', ''))
+            return value
+        else:
+            return 0
+    except ValueError as ex:
+        print(ex)
         return 0
 
 
@@ -14,6 +19,7 @@ def today():
 
 def now():
     return datetime.now().strftime('%Y%m%d%H%M%S')
+
 
 def suggestion(score):
     if score >= 80:

@@ -72,7 +72,7 @@ def fetch_balance_sheet(ticker):
 
 def price_book_ratio(company):
     market_value = company.price * company.initial_capital
-    return round(market_value / company.equity, 2)
+    return round(market_value / company.main, 2)
 
 
 def peg_ratio(company):
