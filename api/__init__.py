@@ -25,7 +25,6 @@ def get_current_price():
     response_dict = {
         "price": round(price_list[-1], 2)
     }
-
     response = flask.jsonify(response_dict)
     response.headers.add_header("Access-Control-Allow-Origin", "*")
     return response
