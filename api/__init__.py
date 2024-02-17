@@ -1,5 +1,4 @@
 import flask
-from talib import RSI
 from flask import Flask, request
 from flask_restful import Api
 from datetime import datetime, timedelta
