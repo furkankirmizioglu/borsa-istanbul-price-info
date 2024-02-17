@@ -29,14 +29,10 @@ def get_current_price():
     del one_year_ago
     del close_data
 
-    rsi = RSI(price_list, 14)
-
     response_dict = {
-        "price": round(price_list[-1], 2),
-        "rsi": round(rsi[-1], 2)
+        "price": round(price_list[-1], 2)
     }
 
-    del rsi
     del price_list
 
     response = flask.jsonify(response_dict)
